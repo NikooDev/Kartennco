@@ -1,0 +1,73 @@
+.cadre {
+  width: 800px;
+  height: 600px;
+  border: 1px solid #ccc;
+  position: relative;
+  overflow: hidden;
+
+  &.hide-border {
+    border: none;
+  }
+
+  &.hide-border .editable-text {
+    border: none;
+  }
+
+  &.hide-border .image {
+    border: none;
+  }
+}
+
+.draggable-item {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+}
+
+.editable-text {
+  border: 1px dashed #ccc;
+  padding: 4px;
+  min-width: 50px;
+  min-height: 20px;
+}
+
+.editable-text:focus {
+  outline: none;
+}
+
+.image {
+  border: 1px dashed #ccc;
+}
+
+.resize-handle {
+  position: absolute;
+  z-index: -1;
+  width: 10px;
+  height: 10px;
+  background-color: #757575;
+  border: 1px solid #ccc;
+}
+
+.top-left {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+
+.top-right {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+
+.bottom-left {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+.bottom-right {
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+}

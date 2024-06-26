@@ -1,1 +1,37 @@
-<p>goodies works!</p>
+<div class="flex flex-col">
+  <div class="cadre" id="cadre">
+    <div *ngFor="let item of items"
+         class="draggable-item"
+         [style.transform]="'translate(' + item.x + 'px, ' + item.y + 'px)'"
+         [attr.data-x]="item.x"
+         [attr.data-y]="item.y">
+      <ng-container [ngSwitch]="item.type">
+        <div *ngIf="item.type === 'text'">
+          <div [contentEditable]="editable"
+               (input)="updateText(item, $event)"
+               class="editable-text">{{ item.content }}</div>
+        </div>
+        <div *ngIf="item.type === 'image' && item.src" class="image">
+          <img [ngSrc]="item.src" [ngClass]="{'resizable-item': resizable}"
+               [priority]="true"
+               [width]="item.width"
+               [height]="item.height"
+               [style.width.px]="item.width"
+               [style.height.px]="item.height"
+               [attr.data-width]="item.width"
+               [attr.data-height]="item.height" alt="Image"/>
+          <div [ngClass]="{'hidden': !resizable}">
+            <div class="resize-handle top-left"></div>
+            <div class="resize-handle top-right"></div>
+            <div class="resize-handle bottom-left"></div>
+            <div class="resize-handle bottom-right"></div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  <div class="ml-auto w-[1050px]">
+    <button class="bg-secondary hover:bg-ternary transition-colors text-white py-1.5 px-3 rounded-2xl items-start" (click)="resize($event)">Redimentionner l'image</button>
+    <button class="bg-secondary hover:bg-ternary transition-colors text-white py-1.5 px-3 rounded-2xl items-start" (click)="export()">Exporter en PNG</button>
+  </div>
+</div>
