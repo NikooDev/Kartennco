@@ -6,13 +6,24 @@ import { AuthComponent } from './auth/auth.component';
 import { AboutComponent } from './about/about.component';
 import { ContactComponent } from './contact/contact.component';
 import { UsersComponent } from './dashboard/users/users.component';
+import { CartComponent } from './cart/cart.component';
+import { HomeComponent } from './home/home.component';
+import { ConfirmComponent } from './confirm/confirm.component';
 
 export const routes: Routes = [{
   path: '',
+  component: HomeComponent,
+  title: 'Kartennco'
+}, {
+  path: 'products',
   component: ProductsComponent,
   title: 'Nos produits'
-},{
-  path: 'goodie/:uid/edit',
+}, {
+  path: 'confirm',
+  component: ConfirmComponent,
+  title: 'Commande confirmée'
+}, {
+  path: 'goodie/:goodiename',
   component: GoodiesComponent,
   title: 'Personnalisez votre goodie'
 }, {
@@ -37,4 +48,7 @@ export const routes: Routes = [{
 }, {
   path: 'user/:uid',
   component: UsersComponent
+}, {
+  path: 'cart',
+  component: CartComponent
 }];

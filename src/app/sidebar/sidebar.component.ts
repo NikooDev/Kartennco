@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NgClass, NgForOf } from '@angular/common';
-import { homeIcon, userIcon } from '../utils/icons';
+import { homeIcon, userIcon } from '../helpers/icons';
 
 interface LinksType {
   url: string,

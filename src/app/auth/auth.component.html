@@ -1,1 +1,88 @@
-<p>auth works!</p>
+<section>
+  <div class="flex flex-col items-center justify-center px-6 py-3 mx-auto" style="height: calc(100vh - 7rem)">
+    <div class="w-full bg-secondary rounded-2xl md:mt-0 {{ isSignup ? 'sm:max-w-[50rem]' : 'sm:max-w-md' }} px-7 py-5">
+      <h1 class="text-xl font-bold leading-tight tracking-tight text-white md:text-2xl dark:text-white mb-6 text-center">
+        {{ isSignup ? 'Inscrivez-vous' : 'Connectez-vous' }}
+      </h1>
+      <ng-container *ngIf="!isSignup; else signup">
+        <form class="w-full" autocomplete="off" action="#">
+          <div class="mb-5">
+            <label for="email" class="block mb-2 text-sm font-medium text-white dark:text-white">Adresse e-mail</label>
+            <input type="email" name="other" autocomplete="new-email" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="name@company.com" required="">
+          </div>
+          <div class="mb-3">
+            <label for="password" class="block mb-2 text-sm font-medium text-white dark:text-white">Mot de passe</label>
+            <input type="password" name="other" placeholder="••••••••" autocomplete="new-password" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" required="">
+          </div>
+          <div class="flex items-center justify-end mb-5">
+            <a href="#" class="flex text-sm font-medium text-primary-600 hover:underline text-white">Mot de passe oublié?</a>
+          </div>
+          <button type="submit" class="flex h-8 items-center bg-primary rounded-lg font-roboto uppercase text-sm px-5 py-6 justify-center w-full text-darkColor font-semibold mb-5">Se Connecter</button>
+          <div class="h-[1.5px] w-52 bg-ternary w-full mb-4 mx-auto"></div>
+          <p class="text-sm font-light text-white text-center">
+            Vous n'avez pas encore de compte ? <button (click)="setSignup(true)" class="font-medium text-white hover:underline ">Inscrivez-vous</button>
+          </p>
+        </form>
+      </ng-container>
+      <ng-template #signup>
+        <form class="w-full flex flex-col items-center" autocomplete="off" action="#">
+          <div class="flex gap-10 w-full">
+            <div class="flex flex-col w-full">
+              <div class="mb-5 flex space-x-4">
+                <div class="flex-1">
+                  <label class="block mb-2 text-sm font-medium text-white">Nom</label>
+                  <input name="nom" id="nom" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="Nom" required="">
+                </div>
+                <div class="flex-1">
+                  <label class="block mb-2 text-sm font-medium text-white">Prénom</label>
+                  <input name="prenom" id="prenom" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="Prenom" required="">
+                </div>
+              </div>
+              <div class="mb-5">
+                <label class="block mb-2 text-sm font-medium text-white">Pseudo</label>
+                <input name="pseudo" id="pseudo" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="Pseudo" required="">
+              </div>
+              <div class="mb-5">
+                <label class="block mb-2 text-sm font-medium text-white">Adresse</label>
+                <input name="adresse" id="adresse" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="Adresse" required="">
+              </div>
+              <div class="mb-5 flex space-x-4">
+                <div class="flex-1">
+                  <label class="block mb-2 text-sm font-medium text-white">Code Postal</label>
+                  <input name="codepostal" id="codepostal" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="Code Postal" required="">
+                </div>
+                <div class="flex-1">
+                  <label class="block mb-2 text-sm font-medium text-white">Ville</label>
+                  <input name="ville" id="ville" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="Ville" required="">
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col w-full">
+              <div class="mb-5">
+                <label for="email" class="block mb-2 text-sm font-medium text-white">Adresse e-mail</label>
+                <input type="email" name="email" id="email" autocomplete="new-email" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" placeholder="name@company.com" required="">
+              </div>
+              <div class="mb-3">
+                <label for="password" class="block mb-2 text-sm font-medium text-white">Mot de passe</label>
+                <input type="password" name="password" id="password" autocomplete="new-password" placeholder="••••••••" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" required="">
+              </div>
+              <div class="mb-3">
+                <label for="checkpassword" class="block mb-2 text-sm font-medium text-white">Confirmation mot de passe</label>
+                <input type="password" name="checkpassword" id="checkpassword" placeholder="••••••••" class="placeholder-slate-200 bg-ternary focus:outline-none text-gray-900 rounded-lg block w-full p-2.5" required="">
+              </div>
+              <div class="flex flex-col mt-3">
+                <button type="submit" class="flex h-8 items-center bg-theme px-3 py-1.5 rounded-lg font-roboto font-medium uppercase text-sm font-medium px-5 py-6 justify-center w-full text-darkColor font-semibold mb-5">S'inscrire</button>
+                <div class="h-[1.5px] w-52 bg-ternary w-full mb-4 mx-auto"></div>
+                <p class="text-sm font-light text-white text-center">
+                  J'ai déja un compte &nbsp;<button (click)="setSignup(false)" class="font-medium text-white hover:underline">Connectez-vous</button>
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </ng-template>
+
+    </div>
+  </div>
+</section>

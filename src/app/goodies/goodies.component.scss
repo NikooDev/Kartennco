@@ -1,73 +1,79 @@
-.cadre {
-  width: 800px;
-  height: 600px;
-  border: 1px solid #ccc;
-  position: relative;
+.custom-goodies {
+  height: calc(100vh - 9rem);
+}
+
+.frame {
+  height: 360px;
   overflow: hidden;
 
-  &.hide-border {
-    border: none;
-  }
-
-  &.hide-border .editable-text {
-    border: none;
-  }
-
-  &.hide-border .image {
-    border: none;
+  &.hide-background {
+    background-color: transparent!important;
+    box-shadow: none!important;
   }
 }
 
-.draggable-item {
+.goodie-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.snap {
   position: absolute;
-  cursor: move;
   user-select: none;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  transition: border .15s ease-in-out;
+
+  &:hover, &:focus-within {
+    border: 1.5px solid #40615e;
+  }
 }
 
-.editable-text {
-  border: 1px dashed #ccc;
-  padding: 4px;
-  min-width: 50px;
-  min-height: 20px;
+.snap.text {
+  font-size: 20px;
+  padding: .5rem;
 }
 
-.editable-text:focus {
-  outline: none;
+.snap.image img {
+  max-height: 300px;
+  max-width: 300px;
 }
 
-.image {
-  border: 1px dashed #ccc;
-}
-
-.resize-handle {
+.alignment-line {
   position: absolute;
-  z-index: -1;
-  width: 10px;
-  height: 10px;
-  background-color: #757575;
-  border: 1px solid #ccc;
+  background-color: #ff4b4b;
+  pointer-events: none;
+  z-index: 9999;
 }
 
-.top-left {
-  top: 0;
-  left: 0;
-  cursor: nwse-resize;
+#alignment-line-vertical {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
 }
 
-.top-right {
-  top: 0;
-  right: 0;
-  cursor: nesw-resize;
+#alignment-line-horizontal {
+  height: 2px;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
 }
 
-.bottom-left {
-  bottom: 0;
-  left: 0;
-  cursor: nesw-resize;
+.draggable:focus-within {
+  z-index: 50;
+  pointer-events: auto;
+}
+.draggable *:focus {
+  z-index: 50;
+  pointer-events: auto;
 }
 
-.bottom-right {
-  bottom: 0;
-  right: 0;
-  cursor: nwse-resize;
+[contenteditable=true]:empty:before, .editable::before {
+  content: attr(placeholder);
+  pointer-events: none;
+  display: block;
 }

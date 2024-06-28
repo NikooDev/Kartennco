@@ -1,170 +1,361 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FontKey, GoodieType, SnapType } from '../interfaces/goodies';
+import { ActivatedRoute } from '@angular/router';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import goodies from '../helpers/goodies';
 import interact from 'interactjs';
 import html2canvas from 'html2canvas';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-
-interface ItemType {
-  id: number
-  type: string
-  content?: string
-  x: number
-  y: number
-  src?: string
-  width?: number
-  height?: number
-}
+import { FormsModule } from '@angular/forms';
+import { RatingComponent } from '../rating/rating.component';
 
 @Component({
   selector: 'app-goodies',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage],
+  imports: [CommonModule, FormsModule, RatingComponent],
   templateUrl: './goodies.component.html',
   styleUrl: './goodies.component.scss'
 })
-export class GoodiesComponent implements OnInit {
-  public editable: boolean = true;
-  public resizable: boolean = false;
+export class GoodiesComponent implements OnInit, OnDestroy {
+  public snaps: BehaviorSubject<SnapType[]> = new BehaviorSubject<SnapType[]>([]);
+  private countSnaps: number = 0;
+  public pending: boolean = false;
+  public magnetable: boolean = false;
+  public placeholder: string = 'Votre texte';
 
-  public items: ItemType[] = [
-    { id: 1, type: 'text', content: 'Texte exemple', x: 0, y: 0 },
-    { id: 2, type: 'image', src: 'image.png', x: 100, y: 100, width: 200, height: 150 }
-  ];
+  public subscriptions: Subscription[] = [];
+  public goodie!: GoodieType;
+
+  public download: boolean = false;
+
+  private currentFontIndex: number = 0;
+  private fonts = ['roboto', 'indie', 'berlin', 'play', 'macondo'];
+
+  @ViewChild('goodieContainer', { static: true })
+  public goodieContainer!: ElementRef;
+
+  constructor(
+    private route: ActivatedRoute
+  ) {
+    const params$ = this.route.paramMap.subscribe(params => {
+      const goodiename = params.get('goodiename') as string;
+
+      goodies
+        .filter((goodie) => goodie.name === goodiename)
+        .map((goodie) => {
+          this.goodie = goodie
+        });
+    });
+
+    this.subscriptions.push(params$);
+  }
 
   ngOnInit() {
     this.initDraggable();
     this.initResizable();
+
+    const snaps$ = this.snaps.subscribe((snaps) => {
+      this.download = snaps.length > 0;
+    });
+
+    this.subscriptions.push(snaps$);
   }
 
-  public resize(event: MouseEvent) {
-    if (!this.resizable) {
-      this.resizable = true;
-    }
-    event.stopPropagation();
+  ngOnDestroy() {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
   }
 
-  @HostListener('document:click', ['$event'])
-  handleClick(event: MouseEvent) {
-    const clickedElement = event.target as HTMLElement;
-
-    // Vérifier si l'élément cliqué est une partie de l'image ou non
-    if (!clickedElement.closest('.image')) {
-      // Si le clic est en dehors de l'image, désactiver le redimensionnement
-      this.resizable = false;
-    }
+  public enableMagnetable(bool: boolean) {
+    this.magnetable = bool;
   }
 
-  public initDraggable() {
-    interact('.draggable-item').draggable({
+  private initDraggable(): void {
+    interact('.draggable').draggable({
+      inertia: true,
       listeners: {
-        start(event) {
-          console.log(event.type, event.target);
-        },
-        move(event) {
+        move: (event) => {
           const target = event.target;
+          // keep the dragged position in the data-x/data-y attributes
+          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-          // Obtenez les dimensions du cadre
-          const cadre = document.getElementById('cadre');
-          if (!cadre) return;
+          // translate the element
+          target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 
-          const cadreRect = cadre.getBoundingClientRect();
+          // update the posiion attributes
+          target.setAttribute('data-x', x);
+          target.setAttribute('data-y', y);
 
-          // Calculez la nouvelle position de l'élément en fonction de la position absolue de la souris
-          const x = event.pageX - cadreRect.left - (target.offsetWidth / 2);
-          const y = event.pageY - cadreRect.top - (target.offsetHeight / 2);
+          if (this.magnetable) {
+            this.showAlignmentLines(target);
 
-          // Limitez les nouvelles positions
-          const minX = 0;
-          const minY = 0;
-          const maxX = cadreRect.width - target.offsetWidth;
-          const maxY = cadreRect.height - target.offsetHeight;
-
-          const constrainedX = Math.min(Math.max(x, minX), maxX);
-          const constrainedY = Math.min(Math.max(y, minY), maxY);
-
-          // Mettez à jour la position de l'élément
-          target.style.transform = `translate(${constrainedX}px, ${constrainedY}px)`;
-
-          // Mettez à jour les attributs de données pour la nouvelle position
-          target.setAttribute('data-x', constrainedX.toString());
-          target.setAttribute('data-y', constrainedY.toString());
+            const frameRect = this.goodieContainer.nativeElement.getBoundingClientRect();
+            this.snapToAlignment(target, frameRect, event.dx, event.dy);
+          }
         },
+        end: () => {
+          this.hideAlignmentLines();
+        }
       },
       modifiers: [
         interact.modifiers.restrictRect({
           restriction: 'parent',
-          endOnly: true
-        })
+          endOnly: true,
+        }),
       ]
     });
   }
 
-  public initResizable() {
-    interact('.resizable-item')
-      .resizable({
-        edges: { left: true, right: true, bottom: true, top: true }
-      })
-      .on('resizemove', (event) => {
-        const target = event.target;
-        const x = parseFloat(target.getAttribute('data-x')) || 0;
-        const y = parseFloat(target.getAttribute('data-y')) || 0;
+  private initResizable(): void {
+    interact('.resizable').resizable({
+      margin: 10,
+      inertia: true,
+      edges: { left: true, right: true, bottom: true, top: true },
+      listeners: {
+        move: (event) => {
+          const target = event.target;
+          const parentDiv = target.parentElement;
 
-        // Nouvelles dimensions du rectangle de redimensionnement
-        const rect = event.rect;
+          if (!parentDiv) return;
 
-        // Calcul du ratio actuel de l'image
-        const initialWidth = parseFloat(target.getAttribute('data-initial-width')) || rect.width;
-        const aspectRatio = target.getAttribute('data-aspect-ratio') || (initialWidth / rect.height).toFixed(2);
+          const parentRect = parentDiv.getBoundingClientRect();
 
-        // Calcul des nouvelles dimensions en conservant le ratio
-        let newWidth = rect.width;
-        let newHeight = rect.height;
+          const x = parseFloat(parentDiv.getAttribute('data-x')) || 0;
+          const y = parseFloat(parentDiv.getAttribute('data-y')) || 0;
 
-        if (event.edges.top || event.edges.bottom) {
-          newHeight = rect.height;
-          newWidth = newHeight * parseFloat(aspectRatio);
-        } else {
-          newWidth = rect.width;
-          newHeight = newWidth / parseFloat(aspectRatio);
+          let width = parseFloat(parentDiv.style.width) || parentRect.width;
+          let height = parseFloat(parentDiv.style.height) || parentRect.height;
+
+          // Calculer les nouvelles dimensions
+          width += event.deltaRect.width;
+          height += event.deltaRect.height;
+
+          // Calculer le décalage pour le centrage
+          const offsetX = (width - parentRect.width) / 2;
+          const offsetY = (height - parentRect.height) / 2;
+
+          // Redimensionner et repositionner la div parente
+          parentDiv.style.width = `${width}px`;
+          parentDiv.style.height = `${height}px`;
+          parentDiv.style.transform = `translate(${x - offsetX}px, ${y - offsetY}px)`;
+
+          // Mettre à jour les données de position de la div parente
+          parentDiv.setAttribute('data-x', (x - offsetX).toString());
+          parentDiv.setAttribute('data-y', (y - offsetY).toString());
+
+          // Redimensionner l'image (target)
+          target.style.width = `${width}px`;
+          target.style.height = `${height}px`;
+
+          // Mettre à jour les données de position de l'image (target)
+          const targetX = parseFloat(target.getAttribute('data-x')) || 0;
+          const targetY = parseFloat(target.getAttribute('data-y')) || 0;
+          target.setAttribute('data-x', (targetX - offsetX).toString());
+          target.setAttribute('data-y', (targetY - offsetY).toString());
+
+          if (this.magnetable) {
+            this.showAlignmentLines(parentDiv);
+
+            const frameRect = this.goodieContainer.nativeElement.getBoundingClientRect();
+            this.snapToAlignment(parentDiv, frameRect, event.deltaRect.left, event.deltaRect.top);
+          }
+        },
+        end: () => {
+          this.hideAlignmentLines();
         }
-
-        // Appliquer les nouvelles dimensions
-        target.style.width = `${newWidth}px`;
-        target.style.height = `${newHeight}px`;
-
-        // Mettre à jour les attributs de données
-        target.setAttribute('data-width', newWidth.toString());
-        target.setAttribute('data-height', newHeight.toString());
-
-        // Positionner l'élément
-        target.style.transform = `translate(${x}px, ${y}px)`;
-      })
-      .on('resizestart', (event) => {
-        // Stocker les dimensions initiales lors du démarrage du redimensionnement
-        const target = event.target;
-        const rect = target.getBoundingClientRect();
-        target.setAttribute('data-initial-width', rect.width.toString());
-        target.setAttribute('data-aspect-ratio', (rect.width / rect.height).toFixed(2));
-      });
+      },
+      modifiers: [
+        interact.modifiers.restrictEdges({
+          outer: '.goodie-frame',
+          endOnly: true
+        }),
+        interact.modifiers.aspectRatio({
+          ratio: 'preserve',
+        }),
+        interact.modifiers.restrictSize({
+          min: { width: 50, height: 50 },
+        })
+      ],
+    });
   }
 
-  public updateText(item: any, event: any) {
-    item.content = event.target.innerText;
+  public addSnap(type: 'text' | 'image', content?: string, width?: number, height?: number): void {
+    const id = this.countSnaps++;
+    const frame = this.goodieContainer.nativeElement as HTMLDivElement;
+
+    const frameRect = frame.getBoundingClientRect();
+
+    let x: number, y: number;
+
+    if (type === 'image' && width && height) {
+      console.log((frameRect.width / 2) - (width / 2));
+      x = (frameRect.width / 2) - (width / 2);
+      y = (frameRect.height / 2) - (height / 2);
+    } else {
+      x = (frameRect.width / 2) - (115 / 2);
+      y = (frameRect.height / 2) - (115 / 2);
+    }
+
+    const currentSnaps = this.snaps.getValue();
+
+    // Ajouter l'élément réel à la liste des snaps
+    this.snaps.next([...currentSnaps, {
+      id,
+      type,
+      x,
+      y,
+      content: content ? content : '',
+      edit: true
+    }]);
+
+    // Initialiser les interactions sur le nouvel élément
+    if (type === 'image') {
+      this.initResizable();
+    }
+
+    this.initDraggable();
+  }
+
+  public onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      let w: number, h: number;
+
+      reader.onload = (e: any) => {
+        const image = new Image();
+        image.onload = () => {
+          const width = image.width;
+          const height = image.height;
+
+          if (width >= 300) {
+            w = 300;
+          } else {
+            w = width;
+          }
+
+          if (height >= 300) {
+            h = 300;
+          } else {
+            h = height;
+          }
+
+          this.addSnap('image', e.target.result, w, h);
+          input.value = '';
+        };
+        image.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
+
+  private snapToAlignment(target: HTMLElement, frameRect: DOMRect, dx: number, dy: number): void {
+    const snapThreshold = 5; // Distance à laquelle l'alignement est considéré
+    const snapMargin = 0; // Marge pour désactiver l'alignement
+
+    // Récupérer les positions actuelles
+    let offsetX = parseFloat(target.getAttribute('data-x')!) || 0;
+    let offsetY = parseFloat(target.getAttribute('data-y')!) || 0;
+
+    // Calculer les nouveaux décalages
+    offsetX += dx;
+    offsetY += dy;
+
+    // Calculer les centres
+    const targetRect = target.getBoundingClientRect();
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const frameCenterX = frameRect.left + frameRect.width / 2;
+    const frameCenterY = frameRect.top + frameRect.height / 2;
+
+    // Vérifier et ajuster l'alignement horizontal
+    if (Math.abs(targetCenterX - frameCenterX) < snapThreshold) {
+      const deltaX = frameCenterX - targetCenterX;
+      offsetX += deltaX;
+    } else if (Math.abs(targetCenterX - frameCenterX) > snapMargin) {
+      // Sortir de l'alignement horizontal
+      offsetX -= dx; // Annuler le déplacement en x si l'élément sort de l'alignement
+    }
+
+    // Vérifier et ajuster l'alignement vertical
+    if (Math.abs(targetCenterY - frameCenterY) < snapThreshold) {
+      const deltaY = frameCenterY - targetCenterY;
+      offsetY += deltaY;
+    } else if (Math.abs(targetCenterY - frameCenterY) > snapMargin) {
+      // Sortir de l'alignement vertical
+      offsetY -= dy; // Annuler le déplacement en y si l'élément sort de l'alignement
+    }
+
+    // Appliquer la transformation combinée
+    target.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    target.setAttribute('data-x', offsetX.toString());
+    target.setAttribute('data-y', offsetY.toString());
+  }
+
+  public showAlignmentLines(target: HTMLElement): void {
+    const frame = this.goodieContainer.nativeElement;
+    const frameRect = frame.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const verticalLine = document.getElementById('alignment-line-vertical');
+    const horizontalLine = document.getElementById('alignment-line-horizontal');
+
+    if (!verticalLine || !horizontalLine) return;
+
+    const snapThreshold = 10; // Distance à laquelle l'alignement est considéré
+
+    // Calculer les centres
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+
+    // Alignement au centre du cadre
+    const frameCenterX = frameRect.left + frameRect.width / 2;
+    const frameCenterY = frameRect.top + frameRect.height / 2;
+
+    // Afficher ou masquer les lignes en fonction de la distance
+    verticalLine.style.display = Math.abs(targetCenterX - frameCenterX) < snapThreshold ? 'block' : 'none';
+    horizontalLine.style.display = Math.abs(targetCenterY - frameCenterY) < snapThreshold ? 'block' : 'none';
+
+    // Positionner les lignes
+    verticalLine.style.left = `${frameCenterX - frameRect.left}px`;
+    horizontalLine.style.top = `${frameCenterY - frameRect.top}px`;
+  }
+
+  public hideAlignmentLines() {
+    const verticalLine = document.getElementById('alignment-line-vertical');
+    const horizontalLine = document.getElementById('alignment-line-horizontal');
+
+    if (!verticalLine || !horizontalLine) return;
+
+    verticalLine.style.display = 'none';
+    horizontalLine.style.display = 'none';
   }
 
   public export() {
     const cadre = document.getElementById('cadre');
 
-    cadre && cadre.classList.add('hide-border');
+    if (this.snaps.getValue().length > 0) {
+      cadre && cadre.classList.add('hide-background');
+      this.pending = true;
 
-    cadre && html2canvas(cadre, { backgroundColor: null, scale: 2 }).then(canvas => {
-      this.convertToBlackAndWhite(canvas);
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = 'cadre.png';
-      link.click();
+      setTimeout(() => {
+        cadre && html2canvas(cadre, { backgroundColor: null, scale: 2 }).then(canvas => {
+          this.convertToBlackAndWhite(canvas);
+          const link = document.createElement('a');
+          link.href = canvas.toDataURL('image/png');
+          link.download = 'cadre.png';
+          link.click();
 
-      cadre.classList.remove('hide-border');
-    });
+          cadre.classList.remove('hide-background');
+          this.pending = false;
+        });
+      }, 500);
+    } else {
+
+    }
   }
 
   private convertToBlackAndWhite(canvas: HTMLCanvasElement) {
@@ -182,5 +373,68 @@ export class GoodiesComponent implements OnInit {
     }
 
     ctx.putImageData(imageData, 0, 0);
+  }
+
+  public textItalic(snap: SnapType) {
+    const currentSnap = this.snaps.getValue().filter((s) => s.id === snap.id);
+
+    snap.italic = !currentSnap[0].italic
+  }
+
+  public textBold(snap: SnapType) {
+    const currentSnap = this.snaps.getValue().filter((s) => s.id === snap.id);
+
+    snap.bold = !currentSnap[0].bold
+  }
+
+  public textEditable(snap: SnapType) {
+    const currentSnap = this.snaps.getValue().filter((s) => s.id === snap.id);
+
+    snap.edit = !currentSnap[0].edit;
+  }
+
+  public textFamily(snap: SnapType) {
+    if (!snap.family) {
+      snap.family = {};
+    }
+
+    // Reset all fonts to false
+    this.fonts.forEach(font => {
+      snap.family![font as FontKey] = false;
+    });
+
+    // Set the current font to true
+    const currentFont = this.fonts[this.currentFontIndex] as FontKey;
+    snap.family[currentFont] = true;
+
+    // Increment the font index
+    this.currentFontIndex = (this.currentFontIndex + 1) % this.fonts.length;
+  }
+
+  public textOnFocus(event: FocusEvent) {
+    const target = event.target as HTMLSpanElement;
+    target.classList.remove('editable');
+  }
+
+  public textOnBlur(event: FocusEvent, snap: SnapType) {
+    const target = event.target as HTMLSpanElement;
+
+    snap.edit = false;
+
+    if (target.innerText.length === 0) {
+      target.classList.add('editable');
+    }
+  }
+
+  public removeSnap(snap: SnapType) {
+    const index = this.snaps.getValue().findIndex((s) => s.id === snap.id);
+
+    if (index !== -1) {
+      this.snaps.getValue().splice(index, 1);
+    }
+
+    if (index === 0) {
+      this.download = false;
+    }
   }
 }

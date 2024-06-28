@@ -1,37 +1,156 @@
-<div class="flex flex-col">
-  <div class="cadre" id="cadre">
-    <div *ngFor="let item of items"
-         class="draggable-item"
-         [style.transform]="'translate(' + item.x + 'px, ' + item.y + 'px)'"
-         [attr.data-x]="item.x"
-         [attr.data-y]="item.y">
-      <ng-container [ngSwitch]="item.type">
-        <div *ngIf="item.type === 'text'">
-          <div [contentEditable]="editable"
-               (input)="updateText(item, $event)"
-               class="editable-text">{{ item.content }}</div>
+<section class="relative custom-goodies flex items-center gap-10 justify-center my-10">
+  <div class="flex flex-col w-[35%]">
+    <div id="cadre" class="frame bg-white shadow-md relative rounded-2xl w-full" #goodieContainer>
+      <div id="alignment-line-vertical" class="alignment-line"></div>
+      <div id="alignment-line-horizontal" class="alignment-line"></div>
+
+      <div class="goodie-frame">
+        <img [src]="goodie.src" class="mx-auto absolute top-0 left-0 right-0 z-10 max-w-full max-h-full select-none pointer-events-none" [alt]="goodie.name">
+        <div tabindex="0"
+          *ngFor="let snap of (snaps | async)"
+          class="draggable snap z-20 group focus:z-30"
+          [class.text]="snap.type === 'text'"
+          [class.image]="snap.type === 'image'"
+          [style.transform]="'translate(' + snap.x + 'px, ' + snap.y + 'px)'"
+          [attr.data-x]="snap.x"
+          [attr.data-y]="snap.y"
+        >
+          <ng-container *ngIf="snap.type === 'text'">
+            <span class="flex relative min-h-7 leading-[1.5] editable focus:outline-0"
+                  [attr.contenteditable]="snap.edit"
+                  [attr.placeholder]="placeholder"
+                  (focus)="textOnFocus($event)"
+                  (blur)="textOnBlur($event, snap)"
+                  [ngClass]="{
+                    'cursor-text bg-white px-2.5 py-1.5 shadow-md rounded-lg': snap.edit,
+                    'font-bold': snap.bold,
+                    'italic': snap.italic,
+                    'font-roboto': snap.family?.roboto,
+                    'font-berlin': snap.family?.berlin,
+                    'font-indie': snap.family?.indie,
+                    'font-play': snap.family?.play,
+                    'font-macondo': snap.family?.macondo
+                  }">
+              {{ snap.content }}
+            </span>
+            <div class="absolute right-0 z-30 -top-1 -mt-7 group-focus-within:opacity-100 group-active:opacity-100 opacity-0 transition-opacity duration-150">
+              <div class="flex gap-1 relative z-40">
+                <button (click)="textEditable(snap)" class="shadow-md rounded-lg p-1.5 {{ snap.edit ? 'bg-secondary text-white' : 'bg-white text-darkColor' }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path d="M20.85,9.51,14.49,3.15a.5.5,0,0,0-.71,0l-2.7,2.7a.5.5,0,0,0,0,.71l.59.6L6.24,9.33A2,2,0,0,0,5,10.7L3,18.76a1,1,0,0,0,.26.95l1,1A1,1,0,0,0,5,21a1,1,0,0,0,.24,0l8.06-2a2,2,0,0,0,1.37-1.2l2.17-5.43.6.59a.5.5,0,0,0,.71,0l2.7-2.7A.5.5,0,0,0,20.85,9.51Zm-8,7.51L6.69,18.55l2.86-2.86A.64.64,0,0,1,10,15.5,1.5,1.5,0,1,0,8.5,14a.64.64,0,0,1-.19.45L5.45,17.31,7,11.18l6.23-2.49,2.1,2.1Z"/>
+                  </svg>
+                </button>
+                <button (click)="textFamily(snap)" class="bg-white shadow-md rounded-lg p-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path xmlns="http://www.w3.org/2000/svg" d="M13,18.5a.5.5,0,0,1-.5.5h-1a.5.5,0,0,1-.5-.5V6H6.5A.5.5,0,0,1,6,5.5v-1A.5.5,0,0,1,6.5,4h11a.5.5,0,0,1,.5.5v1a.5.5,0,0,1-.5.5H13Z"/>
+                  </svg>
+                </button>
+                <button (click)="textBold(snap)" class="shadow-md rounded-lg p-1.5 {{ snap.bold ? 'bg-secondary text-white' : 'bg-white text-darkColor' }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path d="M16.5,10.9A4,4,0,0,0,17,9V8a4,4,0,0,0-4-4H7A1,1,0,0,0,6,5V18a1,1,0,0,0,1,1h7a4,4,0,0,0,4-4V14A4,4,0,0,0,16.5,10.9ZM13,7a1,1,0,0,1,1,1V9a1,1,0,0,1-1,1H9V7Zm2,8a1,1,0,0,1-1,1H9V13h5a1,1,0,0,1,1,1Z"/>
+                  </svg>
+                </button>
+                <button (click)="textItalic(snap)" class="shadow-md rounded-lg p-1.5 transition-colors duration-150 {{ snap.italic ? 'bg-secondary text-white' : 'bg-white text-darkColor' }}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path xmlns="http://www.w3.org/2000/svg" d="M16.5,6h-.83a1,1,0,0,0-.95.67L11.4,16.34a.5.5,0,0,0,.47.66h.63a.5.5,0,0,1,.5.5v1a.5.5,0,0,1-.5.5h-5a.5.5,0,0,1-.5-.5v-1a.5.5,0,0,1,.5-.5h.83a1,1,0,0,0,.95-.67L12.6,6.66A.5.5,0,0,0,12.12,6H11.5a.5.5,0,0,1-.5-.5v-1a.5.5,0,0,1,.5-.5h5a.5.5,0,0,1,.5.5v1A.5.5,0,0,1,16.5,6Z"/>
+                  </svg>
+                </button>
+                <button class="bg-white shadow-md rounded-lg p-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path d="M11.85,1.35a.49.49,0,0,1,.15.36V4a8,8,0,0,1,6.92,12,.52.52,0,0,1-.37.24.5.5,0,0,1-.42-.14l-.73-.73a.5.5,0,0,1-.09-.59A5.94,5.94,0,0,0,18,12a6,6,0,0,0-6-6V8.36a.49.49,0,0,1-.15.36l-.2.2a.5.5,0,0,1-.71,0L7.4,5.39a.51.51,0,0,1,0-.71l3.54-3.53a.5.5,0,0,1,.71,0Zm1.21,13.73a.5.5,0,0,0-.71,0l-.2.2a.49.49,0,0,0-.15.36V18a6,6,0,0,1-6-6,5.83,5.83,0,0,1,.7-2.79.51.51,0,0,0-.09-.59l-.74-.74a.5.5,0,0,0-.42-.14A.52.52,0,0,0,5.08,8,8,8,0,0,0,12,20v2.29a.49.49,0,0,0,.15.36l.2.2a.5.5,0,0,0,.71,0l3.54-3.53a.51.51,0,0,0,0-.71Z"/>
+                  </svg>
+                </button>
+                <button (click)="removeSnap(snap)" class="bg-white shadow-md rounded-lg p-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path xmlns="http://www.w3.org/2000/svg" d="M17.85,16.44a.5.5,0,0,1,0,.71l-.7.7a.5.5,0,0,1-.71,0L12,13.41,7.56,17.85a.5.5,0,0,1-.71,0l-.7-.7a.5.5,0,0,1,0-.71L10.59,12,6.15,7.56a.5.5,0,0,1,0-.71l.7-.7a.5.5,0,0,1,.71,0L12,10.59l4.44-4.44a.5.5,0,0,1,.71,0l.7.7a.5.5,0,0,1,0,.71L13.41,12Z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="snap.type === 'image'">
+            <img [src]="snap.content" alt="preview" class="resizable z-10">
+            <div class="absolute -top-1 -left-1 w-2.5 h-2.5 -z-10 bg-secondary group-focus-within:opacity-100 group-active:opacity-100 opacity-0 transition-opacity duration-150"></div>
+            <div class="absolute -top-1 -right-1 w-2.5 h-2.5 -z-10 bg-secondary group-focus-within:opacity-100 group-active:opacity-100 opacity-0 transition-opacity duration-150"></div>
+            <div class="absolute -bottom-1 -left-1 w-2.5 h-2.5 -z-10 bg-secondary group-focus-within:opacity-100 group-active:opacity-100 opacity-0 transition-opacity duration-150"></div>
+            <div class="absolute -bottom-1 -right-1 w-2.5 h-2.5 -z-10 bg-secondary group-focus-within:opacity-100 group-active:opacity-100 opacity-0 transition-opacity duration-150"></div>
+            <div class="absolute right-0 -top-1 -mt-7 group-focus-within:opacity-100 group-active:opacity-100 opacity-0 transition-opacity duration-150">
+              <div class="flex gap-1 relative z-40">
+                <button class="bg-white shadow-md rounded-lg p-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path d="M11.85,1.35a.49.49,0,0,1,.15.36V4a8,8,0,0,1,6.92,12,.52.52,0,0,1-.37.24.5.5,0,0,1-.42-.14l-.73-.73a.5.5,0,0,1-.09-.59A5.94,5.94,0,0,0,18,12a6,6,0,0,0-6-6V8.36a.49.49,0,0,1-.15.36l-.2.2a.5.5,0,0,1-.71,0L7.4,5.39a.51.51,0,0,1,0-.71l3.54-3.53a.5.5,0,0,1,.71,0Zm1.21,13.73a.5.5,0,0,0-.71,0l-.2.2a.49.49,0,0,0-.15.36V18a6,6,0,0,1-6-6,5.83,5.83,0,0,1,.7-2.79.51.51,0,0,0-.09-.59l-.74-.74a.5.5,0,0,0-.42-.14A.52.52,0,0,0,5.08,8,8,8,0,0,0,12,20v2.29a.49.49,0,0,0,.15.36l.2.2a.5.5,0,0,0,.71,0l3.54-3.53a.51.51,0,0,0,0-.71Z"/>
+                  </svg>
+                </button>
+                <button (click)="removeSnap(snap)" class="bg-white shadow-md rounded-lg p-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="16" width="16" viewBox="0 0 24 24">
+                    <path xmlns="http://www.w3.org/2000/svg" d="M17.85,16.44a.5.5,0,0,1,0,.71l-.7.7a.5.5,0,0,1-.71,0L12,13.41,7.56,17.85a.5.5,0,0,1-.71,0l-.7-.7a.5.5,0,0,1,0-.71L10.59,12,6.15,7.56a.5.5,0,0,1,0-.71l.7-.7a.5.5,0,0,1,.71,0L12,10.59l4.44-4.44a.5.5,0,0,1,.71,0l.7.7a.5.5,0,0,1,0,.71L13.41,12Z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </ng-container>
         </div>
-        <div *ngIf="item.type === 'image' && item.src" class="image">
-          <img [ngSrc]="item.src" [ngClass]="{'resizable-item': resizable}"
-               [priority]="true"
-               [width]="item.width"
-               [height]="item.height"
-               [style.width.px]="item.width"
-               [style.height.px]="item.height"
-               [attr.data-width]="item.width"
-               [attr.data-height]="item.height" alt="Image"/>
-          <div [ngClass]="{'hidden': !resizable}">
-            <div class="resize-handle top-left"></div>
-            <div class="resize-handle top-right"></div>
-            <div class="resize-handle bottom-left"></div>
-            <div class="resize-handle bottom-right"></div>
-          </div>
-        </div>
-      </ng-container>
+      </div>
+    </div>
+    <div class="flex w-full justify-between gap-3 mt-3">
+      <button (click)="enableMagnetable(!magnetable)" class="flex items-center {{ magnetable ? 'bg-secondary text-white' : 'bg-white text-darkColor' }} shadow-md rounded-lg py-1.5 px-5">
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" width="24" viewBox="0 0 24 24">
+            <path d="M18.65,9.06h-.48a1,1,0,0,0-.7.29l-6,6a2.09,2.09,0,0,1-2.65.3,1.38,1.38,0,0,1-.26-.22,2,2,0,0,1,0-2.83l6.1-6a1,1,0,0,0,.3-.71V5.34a1,1,0,0,0-.29-.7L12.29,2.29a1,1,0,0,0-.7-.29h-.51a1,1,0,0,0-.7.29L4.48,8.15a8.18,8.18,0,0,0-.56,11.12l.36.39a8,8,0,0,0,11.32,0l6.1-6.06a1,1,0,0,0,.3-.71v-.48a1,1,0,0,0-.29-.7L19.35,9.35A1,1,0,0,0,18.65,9.06Zm-4.47,9.18a6,6,0,0,1-8.48,0A3.83,3.83,0,0,1,5.42,18a6.17,6.17,0,0,1,.47-8.39l2.8-2.73L10.1,8.24l-3,2.93a4,4,0,0,0,0,5.66,3.6,3.6,0,0,0,.52.43,4.1,4.1,0,0,0,5.22-.52l2.91-2.84,1.41,1.41Z"/>
+          </svg>
+        </span>
+      </button>
+      <button (click)="export()" [disabled]="!download" class="flex items-centerw-full disabled:bg-gray-300 disabled:text-gray-600 hover:bg-secondary hover:text-white {{ pending ? 'text-white bg-secondary' : 'text-darkColor bg-white' }} transition-colors duration-200 shadow-md rounded-lg py-1.5 px-3">
+        <span class="mr-2">
+          <ng-container *ngIf="!pending; else loader">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" height="24" width="24" viewBox="0 0 24 24">
+              <path d="M17.9,9C17.4,6.2,15,4,12,4c-3.3,0-6,2.7-6,6c-2.8,0-5,2.2-5,5s2.2,5,5,5h11.5c3,0,5.5-2.5,5.5-5.5C23,11.6,20.8,9.2,17.9,9  z M15.9,13.3l-3.5,3.5c-0.2,0.2-0.5,0.2-0.7,0l-3.5-3.5c-0.2-0.2-0.2-0.5,0-0.7l0.2-0.2c0.1-0.1,0.2-0.1,0.4-0.1H10V8.5  C10,8.2,10.2,8,10.5,8h3C13.8,8,14,8.2,14,8.5v3.8h1.3c0.1,0,0.3,0.1,0.4,0.1l0.2,0.2C16.1,12.8,16.1,13.1,15.9,13.3z"/>
+            </svg>
+          </ng-container>
+          <ng-template #loader>
+            <svg xmlns="http://www.w3.org/2000/svg" class="animate-spin" fill="currentColor" height="24" width="24" viewBox="0 0 24 24">
+              <path d="M11.85,1.35a.49.49,0,0,1,.15.36V4a8,8,0,0,1,6.92,12,.52.52,0,0,1-.37.24.5.5,0,0,1-.42-.14l-.73-.73a.5.5,0,0,1-.09-.59A5.94,5.94,0,0,0,18,12a6,6,0,0,0-6-6V8.36a.49.49,0,0,1-.15.36l-.2.2a.5.5,0,0,1-.71,0L7.4,5.39a.51.51,0,0,1,0-.71l3.54-3.53a.5.5,0,0,1,.71,0Zm1.21,13.73a.5.5,0,0,0-.71,0l-.2.2a.49.49,0,0,0-.15.36V18a6,6,0,0,1-6-6,5.83,5.83,0,0,1,.7-2.79.51.51,0,0,0-.09-.59l-.74-.74a.5.5,0,0,0-.42-.14A.52.52,0,0,0,5.08,8,8,8,0,0,0,12,20v2.29a.49.49,0,0,0,.15.36l.2.2a.5.5,0,0,0,.71,0l3.54-3.53a.51.51,0,0,0,0-.71Z"/>
+            </svg>
+          </ng-template>
+        </span>
+        <span>
+          {{ pending ? 'Chargement...' : 'Télécharger un aperçu' }}
+        </span>
+      </button>
     </div>
   </div>
-  <div class="ml-auto w-[1050px]">
-    <button class="bg-secondary hover:bg-ternary transition-colors text-white py-1.5 px-3 rounded-2xl items-start" (click)="resize($event)">Redimentionner l'image</button>
-    <button class="bg-secondary hover:bg-ternary transition-colors text-white py-1.5 px-3 rounded-2xl items-start" (click)="export()">Exporter en PNG</button>
+  <div class="bg-white w-[50%] shadow-md rounded-2xl p-5">
+    <h1 class="text-4xl font-roboto text-darkColor font-medium">{{ goodie.title | titlecase }}</h1>
+    <div class="flex gap-3 items-center">
+      <p class="text-darkColor font-medium text-lg">{{ goodie.price.toFixed(2) }} €</p>
+      <span class="flex gap-1.5 items-center">
+        <app-rating [rating]="goodie.note"></app-rating>
+        <span class="text-sm">{{ goodie.note }} / 5 (54)</span>
+      </span>
+    </div>
+    <div class="h-0.5 w-full bg-slate-200 my-3"></div>
+    <p class="text-[.9rem] text-slate-500 mb-3">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias assumenda commodi cumque eum harum laboriosam nam nemo, obcaecati officiis quae quo, recusandae repellat repellendus tempora totam unde voluptas! Soluta, veritatis.</p>
+    <p class="text-[.9rem] text-slate-500">Assumenda explicabo minima possimus! Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid animi autem beatae commodi, ducimus ea eligendi illo modi nam officia porro quaerat quod quos reprehenderit sapiente sint, temporibus tenetur vel!</p>
+    <div class="flex items-center w-full mt-5 gap-5">
+      <button class="flex w-full justify-center rounded-lg border border-secondary hover:bg-ternary text-darkColor hover:text-white font-berlin text-lg transition-colors duration-200 py-2 px-3" (click)="addSnap('text')">Ajouter du texte</button>
+      <button class="flex w-full justify-center rounded-lg border border-secondary hover:bg-ternary text-darkColor hover:text-white font-berlin text-lg transition-colors duration-200 py-2 px-3" (click)="selectImage.click()">Ajouter une image</button>
+    </div>
+    <div class="h-0.5 w-full bg-slate-200 my-5"></div>
+    <div class="flex items-center justify-around text-[.9rem] font-medium text-darkColor">
+      <p>40cm x 40cm</p>
+      <p>50g</p>
+      <p>En stock</p>
+      <p>14 jours</p>
+    </div>
+    <div class="h-0.5 w-full bg-slate-200 my-5"></div>
+    <div class="flex items-end gap-5">
+      <div class="flex flex-col w-1/5">
+        <label class="text-sm mb-0.5 text-darkColor">Quantité</label>
+        <input type="number" placeholder="Quantité" [min]="1" [value]="1" class="focus:outline-0 border border-secondary rounded-lg text-2xl w-full font-berlin py-2 px-3">
+      </div>
+      <button class="w-full rounded-lg h-[50px] bg-secondary hover:bg-ternary uppercase text-white font-berlin text-lg transition-colors duration-200">Ajouter au panier</button>
+    </div>
   </div>
-</div>
+
+  <input type="file" accept="image/png" class="hidden" #selectImage (change)="onFileSelected($event)" />
+</section>

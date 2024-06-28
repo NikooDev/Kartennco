@@ -1,0 +1,13 @@
+.star-rating {
+  display: flex;
+}
+
+.star-rating svg {
+  cursor: pointer;
+  fill: #bcbcbc;
+  transition: fill 0.2s;
+}
+
+.star-rating svg.filled {
+  fill: #40615e;
+}

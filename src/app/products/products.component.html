@@ -1,1 +1,24 @@
-<p>products works!</p>
+<section class="flex flex-col">
+  <h1 class="text-3xl font-berlin mb-5 text-darkColor">Nos produits</h1>
+
+  <div class="grid xl:grid-cols-4 md:grid-cols-3 lg:grid-cols-2 grid-cols-1 gap-5">
+    <div *ngFor="let goodie of goodies" [routerLink]="'/goodie/'+goodie.name" class="flex flex-col bg-white rounded-2xl shadow-md hover:shadow-lg hover:cursor-pointer transition-all group">
+      <div class="flex justify-center items-center w-[150px] min-h-[250px] m-auto">
+        <img [src]="goodie.src" [width]="150" [alt]="goodie.name" class="group-hover:scale-125 transition-transform duration-300">
+      </div>
+      <div class="bg-slate-200 h-[1.5px] w-full"></div>
+      <h2 class="text-2xl pt-3 px-3 font-berlin text-darkColor">{{ goodie.title }}</h2>
+      <div class="flex justify-between mb-5 p-3">
+        <p>{{ goodie.price.toFixed(2) }} €</p>
+        <div class="flex items-center gap-1">
+          <app-rating [rating]="goodie.note"></app-rating>
+          <p class="text-sm">{{ goodie.note }}</p>
+        </div>
+      </div>
+      <div class="mt-auto">
+        <button class="bg-primary font-medium group-hover:bg-secondary transition-colors duration-300 text-white font-roboto w-full h-10 rounded-b-2xl">Personnaliser</button>
+      </div>
+    </div>
+  </div>
+
+</section>
