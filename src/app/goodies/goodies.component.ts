@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontKey, GoodieType, SnapType } from '../interfaces/goodies';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import goodies from '../helpers/goodies';
 import interact from 'interactjs';
@@ -12,7 +12,7 @@ import { RatingComponent } from '../rating/rating.component';
 @Component({
   selector: 'app-goodies',
   standalone: true,
-  imports: [CommonModule, FormsModule, RatingComponent],
+  imports: [CommonModule, FormsModule, RatingComponent, RouterLink],
   templateUrl: './goodies.component.html',
   styleUrl: './goodies.component.scss'
 })

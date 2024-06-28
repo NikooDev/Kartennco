@@ -1,3 +1,164 @@
-<section>
-
-</section>
+<div style="height: calc(100vh - 9rem);">
+  <section class="flex gap-10 justify-center items-center h-full w-full">
+    <div class="bg-white rounded-2xl shadow-md w-[55%] p-5">
+      <div class="flex items-center justify-center w-full">
+        <div class="flex items-center whitespace-nowrap {{ currentStep === 0 ? 'text-secondary' : '' }}">
+          <p class="font-berlin">{{ steps[0].title }}</p>
+          <div class="bg-slate-500 w-10 h-[1.5px] mx-2"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="{{ currentStep === 0 ? 'fill-secondary' : '' }}" height="24" width="24" viewBox="0 0 24 24">
+            <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm4.35,7.73-5.62,5.62a.48.48,0,0,1-.7,0L7.65,13a.5.5,0,0,1,0-.71l.53-.53a.48.48,0,0,1,.7,0l1.5,1.49,4.74-4.74a.5.5,0,0,1,.7,0l.53.53A.5.5,0,0,1,16.35,9.73Z"/>
+          </svg>
+          <div class="bg-slate-500 w-10 h-[1.5px] mx-2"></div>
+        </div>
+        <div class="flex items-center whitespace-nowrap {{ currentStep === 1 ? 'text-secondary' : '' }}">
+          <p class="font-berlin">{{ steps[1].title }}</p>
+          <div class="bg-slate-500 w-10 h-[1.5px] mx-2"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="{{ currentStep === 1 ? 'fill-secondary' : '' }}" height="24" width="24" viewBox="0 0 24 24">
+            <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm4.35,7.73-5.62,5.62a.48.48,0,0,1-.7,0L7.65,13a.5.5,0,0,1,0-.71l.53-.53a.48.48,0,0,1,.7,0l1.5,1.49,4.74-4.74a.5.5,0,0,1,.7,0l.53.53A.5.5,0,0,1,16.35,9.73Z"/>
+          </svg>
+          <div class="bg-slate-500 w-10 h-[1.5px] mx-2"></div>
+        </div>
+        <div class="flex items-center whitespace-nowrap {{ currentStep === 2 ? 'text-secondary' : '' }}">
+          <p class="font-berlin">{{ steps[2].title }}</p>
+        </div>
+      </div>
+      <div *ngIf="currentStep === 0" class="mt-5">
+        <h2 class="text-lg">Détail du compte</h2>
+        <div class="bg-slate-200 h-0.5 w-full mb-5 mt-2"></div>
+        <form>
+          <div>
+            <label class="text-sm text-darkColor">Adresse e-mail</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Adresse e-mail">
+          </div>
+          <div class="mt-5">
+            <label class="text-sm text-darkColor">Mot de passe</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Mot de passe">
+          </div>
+          <div class="mt-5 flex justify-end items-center gap-3">
+            <p>Créer un compte</p>
+            <button class="bg-secondary rounded-lg text-white py-3 px-5">Connexion</button>
+          </div>
+        </form>
+      </div>
+      <div *ngIf="currentStep === 1" class="mt-5">
+        <h2 class="text-lg">Confirmez votre adresse</h2>
+        <div class="bg-slate-200 h-0.5 w-full mb-5 mt-2"></div>
+        <form>
+          <div>
+            <label class="text-sm text-darkColor">Nom et prénom</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Nom et prénom">
+          </div>
+          <div class="mt-5">
+            <label class="text-sm text-darkColor">Numéro de téléphone</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Numéro de téléphone">
+          </div>
+          <div class="mt-5">
+            <label class="text-sm text-darkColor">Adresse</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Adresse">
+          </div>
+          <div class="flex w-full gap-5">
+            <div class="mt-5 w-full">
+              <label class="text-sm text-darkColor">Code postal</label>
+              <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Code postal">
+            </div>
+            <div class="mt-5 w-full">
+              <label class="text-sm text-darkColor">Mode de livraison</label>
+              <select class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2">
+                <option>Livraison express</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div *ngIf="currentStep === 2" class="mt-5">
+        <h2 class="text-lg">Paiement</h2>
+        <div class="bg-slate-200 h-0.5 w-full mb-5 mt-2"></div>
+        <form>
+          <div>
+            <label class="text-sm text-darkColor">Numéro</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="5341 XXXX XXXX XXXX">
+          </div>
+          <div class="mt-5">
+            <label class="text-sm text-darkColor">Nom de la carte</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Nom de la carte">
+          </div>
+          <div class="flex w-full gap-5 items-center">
+            <div class="mt-5">
+              <label class="text-sm text-darkColor">Expiration</label>
+              <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="01">
+            </div>
+            <span class="top-[1.5rem] relative text-2xl">/</span>
+            <div class="mt-5">
+              <label class="text-sm text-darkColor h-[23px] flex"></label>
+              <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="24">
+            </div>
+            <div class="mt-5">
+              <label class="text-sm text-darkColor">Cryptogramme</label>
+              <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="123">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="bg-slate-200 h-0.5 w-full my-5"></div>
+      <div class="flex justify-end gap-3">
+        <button
+          class="bg-primary hover:bg-ternary {{ currentStep === 0 && 'hidden' }} text-white font-medium text-[.9rem] py-2 px-4 rounded-lg focus:outline-none transition-colors duration-200"
+          [disabled]="currentStep === 0"
+          (click)="prev()">Précédent</button>
+        <button [routerLink]="currentStep === steps.length - 1 ? '/confirm' : null"
+          class="bg-secondary hover:bg-ternary text-white font-medium text-[.9rem] py-2 px-4 rounded-lg focus:outline-none transition-colors duration-200"
+          (click)="next()">
+          {{ currentStep === 2 ? 'Procéder au paiement' : 'Suivant' }}
+        </button>
+      </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md w-[45%] p-5">
+      <h2 class="text-lg">Résumé de la commande</h2>
+      <div class="bg-slate-200 h-0.5 w-full mb-5 mt-2"></div>
+      <div class="flex items-center">
+        <img src="decaps.png" alt="decapsuleur" width="200">
+        <div class="flex flex-col">
+          <h2 class="text-2xl font-berlin text-darkColor">Décapsuleur</h2>
+          <div class="flex justify-between items-center gap-3">
+            <p class="text-darkColor font-medium text-lg">15,99 €</p>
+            <div class="flex items-center gap-1">
+              <app-rating [rating]="4.3"></app-rating>
+              <p class="text-sm">4.3</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="flex flex-col w-1/5">
+          <label class="text-sm mb-0.5 text-darkColor">Quantité</label>
+          <input type="number" placeholder="Quantité" [min]="1" [value]="1" class="focus:outline-0 border border-secondary rounded-lg text-2xl w-full font-berlin py-2 px-3">
+        </div>
+        <div class="flex gap-5 w-full items-end">
+          <div class="mt-5 w-full">
+            <label class="text-sm text-darkColor">Code promo</label>
+            <input class="bg-primary bg-opacity-20 rounded-lg w-full py-3 px-5 placeholder-secondary mt-2" placeholder="Code promo">
+          </div>
+          <button class="flex justify-center rounded-lg border border-secondary hover:bg-ternary text-darkColor hover:text-white font-berlin text-lg transition-colors duration-200 py-2 px-5">Appliquer</button>
+        </div>
+        <div class="flex justify-between mt-10">
+          <p>Sous-total</p>
+          <p>15,99 €</p>
+        </div>
+        <div class="bg-slate-800 h-[1px] w-full my-3"></div>
+        <div class="flex justify-between mb-3">
+          <p>TVA</p>
+          <p>4,99 €</p>
+        </div>
+        <div class="flex justify-between">
+          <p>Livraison</p>
+          <p>4,50 €</p>
+        </div>
+        <div class="bg-slate-800 h-[1px] w-full my-3"></div>
+        <div class="flex justify-between">
+          <p class="font-bold">TOTAL</p>
+          <p>25,48 €</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
