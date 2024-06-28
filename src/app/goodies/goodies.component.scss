@@ -1,0 +1,79 @@
+.custom-goodies {
+  height: calc(100vh - 9rem);
+}
+
+.frame {
+  height: 360px;
+  overflow: hidden;
+
+  &.hide-background {
+    background-color: transparent!important;
+    box-shadow: none!important;
+  }
+}
+
+.goodie-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.snap {
+  position: absolute;
+  user-select: none;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  transition: border .15s ease-in-out;
+
+  &:hover, &:focus-within {
+    border: 1.5px solid #40615e;
+  }
+}
+
+.snap.text {
+  font-size: 20px;
+  padding: .5rem;
+}
+
+.snap.image img {
+  max-height: 300px;
+  max-width: 300px;
+}
+
+.alignment-line {
+  position: absolute;
+  background-color: #ff4b4b;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+#alignment-line-vertical {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
+
+#alignment-line-horizontal {
+  height: 2px;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+}
+
+.draggable:focus-within {
+  z-index: 50;
+  pointer-events: auto;
+}
+.draggable *:focus {
+  z-index: 50;
+  pointer-events: auto;
+}
+
+[contenteditable=true]:empty:before, .editable::before {
+  content: attr(placeholder);
+  pointer-events: none;
+  display: block;
+}
